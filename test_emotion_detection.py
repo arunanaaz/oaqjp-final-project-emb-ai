@@ -1,75 +1,74 @@
-from EmotionDetection.emotion_detection import emotion_detector
 import unittest
+from server import app
 import json
 
+
 class TestEmotionDetector(unittest.TestCase):
-    def test_emotion_detector(self):
+    
+    def setUp(self):
+        # Create a test client
+        self.app = app.test_client()
+        self.app.testing = True
+    
+    def test_joy_emotion(self):
+        # Test with "I love my life"
+        response = self.app.get('/emotionDetector?textToAnalyze=I love my life')
+        self.assertEqual(response.status_code, 200)
         
-        # Test case for joy emotion
-        result_1 = emotion_detector('I am glad this happened')
-
-          # Assertions
-        self.assertIsNotNone(result)
-        self.assertIsInstance(result, dict)
-        self.assertEqual(len(result), 5)
-
-
-        #formatted_response = json.loads(response.text)
-        #print(formatted_response)
-
-        #result = extract_emotions(formatted_response)
-        #self.assertIsNotNone(result)
-        #self.assertIn('anger', result)
-        #self.assertIn('disgust', result)
-        #self.assertIn('fear', result)
-        #self.assertIn('joy', result)
-        #self.assertIn('sadness', result)
-
-
-
-        #emotions = formatted_response['emotionPredictions'][0]['emotion']
-        #for emotion, score in emotions.items():
-            #print(f"{emotion}: {score}")
-        #self.assertEqual(result_1['emotionPredictions'][0]['emotion'], 'joy')
+        data = json.loads(response.data)
+        self.assertIn('joy', data)
+        self.assertIn('dominant_emotion', data)
+        self.assertEqual(data['dominant_emotion'], 'joy')
+    
+    def test_anger_emotion(self):
+        # Test with "I don't like this"
+        response = self.app.get('/emotionDetector?textToAnalyze=I don\'t like this')
+        self.assertEqual(response.status_code, 200)
         
-        # Test case for anger emotion
-        #result_2 = emotion_detector('I am really mad about this')
-        #self.assertEqual(result_2['emotionPredictions'][0]['anger'], 'anger')
+        data = json.loads(response.data)
+        self.assertIn('anger', data)
+        self.assertIn('dominant_emotion', data)
+    
+    def test_disgust_emotion(self):
+        # Test with "This is disgusting"
+        response = self.app.get('/emotionDetector?textToAnalyze=This is disgusting')
+        self.assertEqual(response.status_code, 200)
         
-        # Test case for disgust emotion
-        #result_3 = emotion_detector('I feel disgusted just hearing about this')
-        #self.assertEqual(result_3['emotionPredictions'][0]['disgust'], 'disgust')
+        data = json.loads(response.data)
+        self.assertIn('disgust', data)
+        self.assertIn('dominant_emotion', data)
+    
+    def test_sadness_emotion(self):
+        # Test with "I am so sad about this"
+        response = self.app.get('/emotionDetector?textToAnalyze=I am so sad about this')
+        self.assertEqual(response.status_code, 200)
+        
+        data = json.loads(response.data)
+        self.assertIn('sadness', data)
+        self.assertIn('dominant_emotion', data)
+    
+    def test_fear_emotion(self):
+        # Test with "I am really afraid"
+        response = self.app.get('/emotionDetector?textToAnalyze=I am really afraid')
+        self.assertEqual(response.status_code, 200)
+        
+        data = json.loads(response.data)
+        self.assertIn('fear', data)
+        self.assertIn('dominant_emotion', data)
+    
+    def test_empty_input(self):
+        # Test with empty input
+        response = self.app.get('/emotionDetector?textToAnalyze=')
+        self.assertEqual(response.status_code, 400)
+        
+        data = json.loads(response.data)
+        self.assertIn('error', data)
+    
+    def test_no_input(self):
+        # Test with no textToAnalyze parameter
+        response = self.app.get('/emotionDetector')
+        self.assertEqual(response.status_code, 400)
 
 
-    def extract_emotions(data):
-        try:
-            # Handle JSON string input
-            if isinstance(data, str):
-                data = json.loads(data)
-            
-            # Navigate to emotion scores
-            predictions = data.get('emotionPredictions', [])
-            if not predictions:
-                return None
-                
-            emotions = predictions[0].get('emotion', {})
-            return emotions if emotions else None
-            
-        except (KeyError, IndexError, TypeError, AttributeError, json.JSONDecodeError):
-            return None    
-
-
-    def get_text_from_span(data):
-        try:
-            if isinstance(data, str):
-                data = json.loads(data)
-                
-            mentions = get_emotion_mentions(data)
-            if mentions and len(mentions) > 0:
-                return mentions[0].get('span', {}).get('text')
-            return None
-            
-        except (KeyError, IndexError, TypeError, AttributeError):
-            return None    
-
+if __name__ == '__main__':
     unittest.main()
