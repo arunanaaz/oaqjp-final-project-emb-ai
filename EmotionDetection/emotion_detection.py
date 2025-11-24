@@ -1,4 +1,3 @@
-
 import requests
 import json
 
@@ -15,19 +14,16 @@ def emotion_detector(text_to_analyse):
     # Sending a POST request to the emotion_detection API
     response = requests.post(url, json=myobj, headers=header)
 
-    # Parse the response
+    # format the response
     formatted_response = json.loads(response.text)
-    
-    # Extract emotions
-    emotions = formatted_response['emotionPredictions'][0]['emotion']
-    
-    # Find dominant emotion
-    dominant_emotion = max(emotions.items(), key=lambda x: x[1])[0]
-    
-    # Create result dictionary with all emotions plus dominant_emotion
-    result = {**emotions, "dominant_emotion": dominant_emotion}
 
-    #print(json.dumps(result, indent=2))
-    
+    #Extract emotions
+    emotions = formatted_response['emotionPredictions'][0]['emotion']
+
+    #Find the dominant emotion
+    dominant_emotion = max(emotions.items(), key=lambda x: x[1])[0]
+
+    #Create result dictionary with all emotions plus dominant emotion
+    result = {**emotions, "dominant_emotion":dominant_emotion}
+
     return result
-    
